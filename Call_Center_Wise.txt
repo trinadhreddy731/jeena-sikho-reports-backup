@@ -1,0 +1,75 @@
+select 
+s.call_center as "Call Center",  /* call centers*/
+count(s.name) as "Sales Order",  /* Total Sales Orders*/
+count(case s.status when "Address Verification" then 1 end) as "Address Verification",
+count(case s.status when "Cancelled" then 1 end) as "Cancelled",
+count(case s.status when "Completed" then 1 end) as "Completed",
+count(case s.status when "Delivered" then 1 end) as "Delivered",
+count(case s.status when "Dispatch Pending" then 1 end) as "Dispatch Pending",
+count(case s.status when "Draft" then 1 end) as "Draft",   /*Status*/
+count(case s.status when "Final Cancel" then 1 end) as "Final Cancel",
+count(case s.status when "New Order" then 1 end) as "New Order",
+count(case s.status when "OFD" then 1 end) as "OFD",
+count(case s.status when "Pincode Not Serviceable"  then 1 end ) as "Pincode Not Serviceable",
+count(case s.status when "RAD" then 1 end) as "RAD",
+count(case s.status when "Re-attempt" then 1 end) as "Re-attempt",
+count(case s.status when "Returned" then 1 end) as "Returned",
+count(case s.status when "Shipped" then 1 end) as "Shipped" ,
+count(case s.status when "To Deliver" then 1 end) as "To Deliver",
+count(case s.status when "To Deliver and Bill" then 1 end) as "To Deliver and Bill",
+count(case when s.status != "To Deliver and Bill"
+            and s.status != "To Deliver"
+            and s.status != "Shipped" 
+            and s.status != "Returned" 
+            and s.status != "Re-Attempt"
+            and s.status != "RAD"
+            and s.status != "Pincode Not Serviceable"
+            and s.status != "OFD" 
+            and s.status != "New Order" 
+            and s.status != "Final Cancel" 
+            and s.status != "Draft" 
+            and s.status != "Dispatch Pending"
+            and s.status != "Delivered" 
+            and s.status != "Completed"
+            and s.status != "Cancelled" 
+            and s.status != "Address Verification"  then 1 end ) as "Other",
+(
+count(case s.status when "Address Verification" then 1 end) +
+count(case s.status when "Cancelled" then 1 end) +
+count(case s.status when "Completed" then 1 end) +
+count(case s.status when "Delivered" then 1 end) +
+count(case s.status when "Dispatch Pending" then 1 end) +
+count(case s.status when "Draft" then 1 end) +
+count(case s.status when "Final Cancel" then 1 end) +
+count(case s.status when "New Order" then 1 end) +
+count(case s.status when "OFD" then 1 end) +
+count(case s.status when "Pincode Not Serviceable"  then 1 end ) +
+count(case s.status when "RAD" then 1 end) +
+count(case s.status when "Re-attempt" then 1 end) +
+count(case s.status when "Returned" then 1 end) +
+count(case s.status when "Shipped" then 1 end) +
+count(case s.status when "To Deliver" then 1 end) +
+count(case s.status when "To Deliver and Bill" then 1 end) +
+count(case when s.status != "To Deliver and Bill"
+            and s.status != "To Deliver"
+            and s.status != "Shipped" 
+            and s.status != "Returned" 
+            and s.status != "Re-Attempt"
+            and s.status != "RAD"
+            and s.status != "Pincode Not Serviceable"
+            and s.status != "OFD" 
+            and s.status != "New Order" 
+            and s.status != "Final Cancel" 
+            and s.status != "Draft" 
+            and s.status != "Dispatch Pending"
+            and s.status != "Delivered" 
+            and s.status != "Completed"
+            and s.status != "Cancelled" 
+            and s.status != "Address Verification"  then 1 end ) ) as "Grand Total",
+concat((count(case when s.status = 'Delivered' then  1  end)/count(s.name))*100,'%%') AS "Total Delivered %%"
+/*if(count(case s.status when "Delivered" then 1 end)/(count(name)-(count(case status when "Address Verification" then 1 end)+count(case status when "Rejected" then 1 end)))*100,count(case s.status when "Delivered" then 1 end)/(count(name)-(count(case status when "Address Verification" then 1 end)+count(case status when "Rejected" then 1 end)))*100,0) as "Delivered Percentage" */
+from 
+(select status,name,call_center from
+`tabSales Order` ) as s
+group by 
+s.call_center
