@@ -1,0 +1,23 @@
+select 
+so.company as "Clinic/Company",
+concat(Monthname(so.transaction_date),"  |  ",Year(so.transaction_date)) as "MONTH | YEAR::180",
+count(case when so.order_type = "Retail Sales" and so.lead_type="Fresh Order" then 0 end) as "Retail New Order Count",
+SUM(case when so.order_type = "Retail Sales" and so.lead_type="Fresh Order" then total else 0 end) as "Retail New Sales:Currency",
+
+count(case when so.order_type = "Retail Sales" and so.lead_type="Existing Customer Order" then 0 end) as "Retail Old Order Count",
+SUM(case when so.order_type = "Retail Sales" and so.lead_type="Existing Customer Order" then total else 0 end) as "Retail Old Sales:Currency",
+
+count(case when so.order_type = "Sales" and so.lead_type="Fresh Order" then 0 end) as "COD New Order Count",
+SUM(case when so.order_type = "Sales" and so.lead_type="Fresh Order" then total else 0 end) as "COD New Sales:Currency",
+
+count(case when so.order_type = "Sales" and so.lead_type="Existing Customer Order" then 0 end) as "COD Old Order Count",
+SUM(case when so.order_type = "Sales" and so.lead_type="Existing Customer Order" then total else 0 end) as "COD Old Sales:Currency",
+
+count(case when so.order_type = "Retail Sales" and so.lead_type="Fresh Order" then 0 end) + count(case when so.order_type = "Retail Sales" and so.lead_type="Existing Customer Order" then 0 end) +count(case when so.order_type = "Sales" and so.lead_type="Fresh Order" then 0 end) + count(case when so.order_type = "Sales" and so.lead_type="Existing Customer Order" then 0 end)  as "Total Count" ,
+
+SUM(case when so.order_type = "Retail Sales" and so.lead_type="Fresh Order" then total else 0 end)+SUM(case when so.order_type = "Retail Sales" and so.lead_type="Existing Customer Order" then total else 0 end)+SUM(case when so.order_type = "Sales" and so.lead_type="Fresh Order" then total else 0 end)+SUM(case when so.order_type = "Sales" and so.lead_type="Existing Customer Order" then total else 0 end) as "Total sales Amount:Currency"
+
+from `tabSales Order` so where transaction_date between %(from)s and %(to)s 
+
+group by so.company,Monthname(so.transaction_date) 
+order by Date(so.transaction_date) desc
