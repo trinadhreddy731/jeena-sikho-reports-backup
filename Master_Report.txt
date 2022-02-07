@@ -1,0 +1,22 @@
+select
+ce.clinic_name as "Clinic Name",
+concat_ws(' ',hp.first_name, hp.middle_name,hp.last_name) as "Doctor Name",
+so.customer_name as "Party Name::300",
+count(case so.order_type when "Retail Sales" then 1 end) as "Retail Sales",
+count(case so.order_type when "Sales" then 1 end) as "COD Sales",
+count(so.name) as "Final Sales", 
+if(so.order_type = "Retail Sales", sum(so.discount_amount),0) as "Retail Discount:Currency",
+if(so.order_type = "Sales", sum(so.discount_amount), 0) as "Sales Discount:Currency",
+sum(so.discount_amount) as "Total Discount Amount:Currency",
+count(case when so.order_type ="Retail Sales" and so.status ="Return" then 1 end) as "Retail RTO",
+count(case when so.order_type ="Sales" and so.status ="Return" then 1 end) as "COD RTO",
+so.payment_mode as "Payment Mode"
+from (select customer_name,order_type,name,discount_amount,payment_mode,lead,status,transaction_date,company  from `tabSales Order`) so
+left join (select clinic_name,lead from `tabClinical Enquiry`) ce on so.lead = ce.lead 
+left join  (select company,name  from `tabHealthcare Service Unit`) hsu on so.company=hsu.company
+left join (select service_unit,parent  from `tabPractitioner Service Unit Schedule`) ps on ps.service_unit=hsu.name
+left join (select first_name,middle_name,last_name,name from  `tabHealthcare Practitioner`) hp on hp.name=ps.parent
+where so.transaction_date between %(from)s and %(to)s
+group by ce.clinic_name ,concat_ws(' ',hp.first_name, hp.middle_name,hp.last_name),so.customer_name
+
+/* Need to add multi select filters like -  date filter from date to - to date set on  01/01/2021 - 01/01/2022  / Clinic Name - ce.clinic_name / Dr name - hp.first_name */
