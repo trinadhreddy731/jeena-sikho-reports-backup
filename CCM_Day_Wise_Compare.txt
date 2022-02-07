@@ -1,0 +1,115 @@
+select
+s.call_center AS "Call Center::150",
+ccm_code as "CCM",
+concat(day(creation),"") as "Upto Day of the Month", 
+monthname(creation) as Month,
+concat(Year(creation),"")as "Year",
+count(CASE WHEN s.status='Draft' THEN 1 END) as 'Draft',
+count(CASE WHEN s.status='Address Verification' THEN 1 END) as 'Address Verification',
+count(CASE WHEN s.status='Pincode Not Serviceable' THEN 1 END) as 'Pincode Not Serviceable',
+count(CASE WHEN s.status='On Hold' THEN 1 END)as 'On Hold',
+count(CASE WHEN s.status='To Deliver And Bill' THEN 1 END) as 'To Deliver And Bill',
+count(CASE WHEN s.status='To Bill' THEN 1 END) as 'To Bill',
+count(CASE WHEN s.status='To Deliver' THEN 1 END) as 'To Deliver',
+count(CASE WHEN s.status='Urgent Delivery' THEN 1 END ) as 'Urgent Delivery',
+count(CASE WHEN s.status='Cancelled' THEN 1 END) as 'Cancelled',
+count(CASE WHEN s.status='Closed' THEN 1 END) as 'Closed',
+count(CASE WHEN s.status='Delivered' THEN 1 END) as 'Delivered',
+count(CASE WHEN s.status='AV Rejected' THEN 1 END) as 'AV Rejected',
+count(CASE WHEN s.status='Re-Attempt' THEN 1 END) as 'Re-Attempt',
+count(CASE WHEN s.status='Returned' THEN 1 END) as 'Returned',
+count(CASE WHEN s.status='Shipped' THEN 1 END) as 'Shipped',
+sum(CASE WHEN s.status='Draft' THEN 1 else "" end)+
+sum(CASE WHEN s.status='Address Verification' THEN 1 else "" end)+
+sum(CASE WHEN s.status='Pincode Not Serviceable' THEN 1 else "" end)+
+sum(CASE WHEN s.status='On Hold' THEN 1 else "" end)+
+sum(CASE WHEN s.status='To Deliver And Bill' THEN 1 else "" end)+
+sum(CASE WHEN s.status='To Bill' THEN 1 else "" end)+
+sum(CASE WHEN s.status='To Deliver' THEN 1 else "" end)+
+sum(CASE WHEN s.status='Urgent Delivery' THEN 1 else "" end)+
+sum(CASE WHEN s.status='Cancelled' THEN 1 else "" end)+
+sum(CASE WHEN s.status='Closed' THEN 1 else "" end)+
+sum(CASE WHEN s.status='Delivered' THEN 1 else "" end)+
+sum(CASE WHEN s.status='AV Rejected' THEN 1 else "" end)+
+sum(CASE WHEN s.status='Re-Attempt' THEN 1 else "" end)+
+sum(CASE WHEN s.status='Returned' THEN 1 else "" end)+
+sum(CASE WHEN s.status='Shipped' THEN 1 else "" end) as 'Call Center Total'
+from (select creation,call_center,ccm_code,status from `tabSales Order`) s
+     /*where day(s.creation) between 1 and 31*/  /* need to add days filters ,CCM filter , date filter already done */
+where day(s.creation) between 1 and %(day)s 
+and date(s.creation) between %(from)s and %(to)s 
+    and (select case when %(cc)s='__ALL__' then 1=1 else   s.call_center=%(cc)s end )
+    and (select case when %(ccm)s='--all--@data.com' then 1=1 else  s.ccm_code=%(ccm)s   end)
+
+group by month(creation),s.call_center,ccm_code
+order by s.call_center,month(creation),Year(creation)
+/* Data - */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+SELECT x.ccm as "Call Centre Manager", x.month AS "Month",
+x.billing_pending AS "Billing Pending", x.billing_pending_percentage as "Billing Pending Percentage:Percent",
+x.Billing_Verified AS "Billing Verified",x.billing_verified_percentage as "Billing Verified Percentage:Percent",
+x.delivered as "Delivered",
+x.delivered/SUM(x.grand_total) AS "Delivered Percentage:Percent",
+x.new_order AS "New Order",
+x.new_order_percentage AS "New Order Percentage:Percent",
+x.shipped AS "Shipped",
+x.shipped_percentage AS "Shipped Percentage:Percent",
+x.grand_total AS "Grand Total"
+From
+(SELECT ccm_name AS "ccm",
+monthname(Date(creation)) as 'month',
+COUNT(CASE WHEN workflow_state="Pending For Payment" THEN 1 END) AS "billing_pending",
+(COUNT(CASE WHEN workflow_state="Pending For Payment" THEN 1 END)/(COUNT(CASE WHEN workflow_state="Pending For Payment" THEN 1 END)+COUNT(CASE WHEN workflow_state="Payment Confirmation" THEN 1 END) +COUNT(CASE WHEN workflow_state="Delivered" THEN 1 END)+COUNT(CASE WHEN lead_type="Fresh Order" THEN 1 END)+COUNT(CASE WHEN workflow_state="Dispatch" THEN 1 END)))*100 AS "billing_pending_percentage",
+COUNT(CASE WHEN workflow_state="Payment Confirmation" THEN 1 END) AS "billing_verified",
+(COUNT(CASE WHEN workflow_state="Payment Confirmation" THEN 1 END)/(COUNT(CASE WHEN workflow_state="Pending For Payment" THEN 1 END)+COUNT(CASE WHEN workflow_state="Payment Confirmation" THEN 1 END) +COUNT(CASE WHEN workflow_state="Delivered" THEN 1 END)+COUNT(CASE WHEN lead_type="Fresh Order" THEN 1 END)+COUNT(CASE WHEN workflow_state="Dispatch" THEN 1 END)))*100 AS "billing_verified_percentage",
+COUNT(CASE WHEN workflow_state="Delivered" THEN 1 END) AS "delivered",
+COUNT(CASE WHEN lead_type="Fresh Order" THEN 1 END) AS "new_order",
+(COUNT(CASE WHEN lead_type="Fresh Order" THEN 1 END)/(COUNT(CASE WHEN workflow_state="Pending For Payment" THEN 1 END)+COUNT(CASE WHEN workflow_state="Payment Confirmation" THEN 1 END) +COUNT(CASE WHEN workflow_state="Delivered" THEN 1 END)+COUNT(CASE WHEN lead_type="Fresh Order" THEN 1 END)+COUNT(CASE WHEN workflow_state="Dispatch" THEN 1 END)))*100 AS "new_order_percentage",
+COUNT(CASE WHEN workflow_state="Dispatch" THEN 1 END) AS "shipped",
+(COUNT(CASE WHEN workflow_state="Dispatch" THEN 1 END)/(COUNT(CASE WHEN workflow_state="Pending For Payment" THEN 1 END)+COUNT(CASE WHEN workflow_state="Payment Confirmation" THEN 1 END) +COUNT(CASE WHEN workflow_state="Delivered" THEN 1 END)+COUNT(CASE WHEN lead_type="Fresh Order" THEN 1 END)+COUNT(CASE WHEN workflow_state="Dispatch" THEN 1 END)))*100 AS "shipped_percentage",
+(COUNT(CASE WHEN workflow_state="Pending For Payment" THEN 1 END)+COUNT(CASE WHEN workflow_state="Payment Confirmation" THEN 1 END) +COUNT(CASE WHEN workflow_state="Delivered" THEN 1 END)+COUNT(CASE WHEN lead_type="Fresh Order" THEN 1 END)+COUNT(CASE WHEN workflow_state="Dispatch" THEN 1 END)) as "grand_total"
+From `tabSales Order`
+Group By ccm_name,monthname(Date(creation))
+order by monthname(Date(creation)) desc, 'Days' DESC)x
+
+*/
+
+
+
