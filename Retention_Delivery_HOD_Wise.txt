@@ -1,0 +1,23 @@
+SELECT
+so.hod 'HOD::120',
+so.hod_name as 'HOD Name::120',
+monthname(Date(so.transaction_date)) as 'Month',
+concat(year(Date(so.transaction_date)),"") as 'Year',
+Count(CASE WHEN so.lead_type = "Existing Customer Order" then 1 END) AS 'Repeat-Orders',
+COUNT(CASE WHEN so.lead_type = "Existing Customer Order" AND so.status = "Delivered" then 1 END) AS 'Repeat-Orders(Delivered)',
+concat(ROUND(COUNT(CASE WHEN so.lead_type = "Existing Customer Order" AND so.status = "Delivered" then 1 END)/COUNT(CASE WHEN so.lead_type = "Existing Customer Order" then 1 END)*100,2),"%%") AS "Repeat-Orders(Delivered)%%::200",
+COUNT(CASE WHEN so.lead_type = "Fresh Order" then 1 END) AS 'New-Orders',
+COUNT(CASE WHEN so.lead_type = "Fresh Order" AND so.status = "Delivered" then 1 END) AS 'New-Orders(Delivered)',
+concat(ROUND(COUNT(CASE WHEN so.lead_type = "Fresh Order" AND so.status = "Delivered" then 1 END)/COUNT(CASE WHEN so.lead_type = "Fresh Order" then 1 END)*100,2),"%%") AS "New-Orders(Delivered)%%"
+from (select hod,hod_name,transaction_date,lead_type,status from`tabSales Order`) so
+where  date(so.transaction_date) between %(from)s and %(to)s
+       and  (select case when %(hod)s='__ALL__' then 1=1 else  so.hod=%(hod)s    end)  
+/*where  so.ccm_code= %%(ccm)ss   and   date(so.transaction_date) between  %%(from)ss and %%(to)ss */
+
+/*and so.ccm_code is Not null*/
+group by 
+so.hod , year(Date(so.transaction_date)) , monthname(Date(so.transaction_date)) 
+
+order by so.hod , year(Date(so.transaction_date)) DESC, month(Date(so.transaction_date)) desc
+
+/* you can see hod filter - admin404@jeenasikho.co.in */
