@@ -1,0 +1,11 @@
+select 
+ce.clinic_name as "Clinic Name",
+so.customer_name as "Party Name::300",
+sum(distinct(case when so.order_type = "Retail Sales" then discount_amount end)) as "Retail Discount:Currency",
+sum(distinct(case when so.order_type = "Sales" then discount_amount end)) as "Sales Discount:Currency",
+sum(distinct(case when so.order_type = "Retail Sales"  then  discount_amount
+         when so.order_type = "Sales"  then  discount_amount end ))
+as "Total Discount:Currency"
+from (select customer_name,order_type,transaction_date,lead,discount_amount   from `tabSales Order`) so left join (select clinic_name,lead from `tabClinical Enquiry`) ce
+on so.lead = ce.lead  and so.transaction_date between %(from)s and %(to)s
+group by ce.clinic_name,so.customer_name 
