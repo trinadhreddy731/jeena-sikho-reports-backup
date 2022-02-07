@@ -1,0 +1,12 @@
+select
+so.transaction_date as "Date::100",
+so.ccm_name as "CCM:300",
+count(so.name) as "Orders:300",
+count(case so.status when "Delivered" then 0 end) as "Delivered Orders:300"
+from (select transaction_date,ccm_name,name,status from `tabSales Order`) so
+
+    where (date(so.transaction_date) between %(from_date)s and %(to_date)s) and 
+    (select case when %(ccm)s="__ALL__" then 1=1 else so.ccm_name=%(ccm)s end)
+    group by so.transaction_date,so.ccm_name
+
+/* Need to correct the filter ccm_name so.ccm_name=%%(ccm_name)ss */
