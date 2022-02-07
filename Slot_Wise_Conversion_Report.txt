@@ -30,8 +30,8 @@ COUNT(distinct CASE WHEN cl.medium = 'Incoming' and cl.status = "Completed" and 
 COUNT(distinct s.lead) as 'Order',
 COUNT( distinct s.lead)/COUNT(distinct CASE WHEN cl.medium = 'Incoming' and cl.status = "Completed" and cl.duration > 0 THEN cl.name END)*100 as "Conn./Answered:Percent",
 COUNT(distinct s.lead)/COUNT(distinct CASE WHEN cl.medium = 'Incoming' THEN cl.name END)*100 as "Conn./Offered:Percent"
-From `tabCall Log` cl 
-left join `tabSales Order` s on s.lead = cl.lead 
+From (select callstart_date,medium,status,lead,creation,name,duration  from  `tabCall Log`) cl 
+left join (select lead from `tabSales Order`) s on s.lead = cl.lead 
 where  cl.creation between %(from)s and %(to)s
 group by Hourly_Track
 order by time(cl.callstart_date)
