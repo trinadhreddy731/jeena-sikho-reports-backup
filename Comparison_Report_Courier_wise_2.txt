@@ -1,0 +1,42 @@
+select
+		/*dn.name as "Name:Link/Delivery Note:200",*/
+		cc.name as "Call Center",
+		cc.manager as "Manager",
+		monthname(dn.delivery_date) as "Month",
+		date(dn.delivery_date) as "Date",
+			/*ct.name as "Courier Tracking:Link/Courier Tracking:200",*/
+		ct.courier as "Courier",
+		count(case ct.status when "Delivered" then 1 end) as "Delivered",
+    		concat(round(sum(case ct.status when "Delivered" then 1 else 0 end)/count(dn.courier_tracking)*100),'%%') as "Delivered %%",
+		count(case ct.status when "Dispatch Pending" then 1 end) as "Dispatch Pending",
+    			concat(round(sum(case ct.status when "Dispatch Pending" then 1 else 0 end)/count(dn.courier_tracking)*100 ),'%%') as "Dispatch Pending %%",
+    		count(case ct.status when "In-Transit" then 1 end) as "In Transit",
+    			concat(round(sum(case ct.status when "In-Transit" then 1 else 0 end)/count(dn.courier_tracking)*100 ),'%%')as "In Transit %%",
+    		count(case ct.status when "NDR" then 1 end) as "NDR",
+   	 		concat(round(sum(case ct.status when "NDR" then 1 else 0 end)/count(dn.courier_tracking)*100 ),'%%') as "NDR %%",
+    		count(case ct.status when "ODA" then 1 end) as "ODA",
+    			concat(round(sum(case ct.status when "ODA" then 1 else 0 end)/count(dn.courier_tracking)*100 ),'%%') as "ODA %%",
+    		count(case ct.status when "OFD" then 1 end) as "OFD",
+    			concat(round(sum(case ct.status when "OFD" then 1 else 0 end)/count(dn.courier_tracking)*100 ),'%%') as "OFD %%",
+    		count(case ct.status when "RAD" then 1 end) as "RAD",
+    			concat(round(sum(case ct.status when "RAD" then 1 else 0 end)/count(dn.courier_tracking)*100 ),'%%') as "RAD %%",
+		count(case ct.status when "Lost" then 1 end) as "Lost",
+                	concat(round(sum(case ct.status when "Lost" then 1 else 0 end)/count(dn.courier_tracking)*100 ),'%%') as "Lost %%",
+		count(case ct.status when "Delay in Delivery" then 1 end) as "Delay In Delivery",
+                	concat(round(sum(case ct.status when "Delay in Delivery" then 1 else 0 end)/count(dn.courier_tracking)*100 ),'%%') as "Delay %%",
+		count(case ct.status when "RTO In-Transit" then 1 end) as "RTO In Transit",
+                	concat(round(sum(case ct.status when "RTO In-Transit" then 1 else 0 end)/count(dn.courier_tracking)*100 ),'%%') as "RTO In Transit %%",
+    		count(case ct.status when "RTO" then 1 end) as "RTO",
+    			concat(round(sum(case ct.status when "RTO" then 1 else 0 end)/count(dn.courier_tracking)*100 ),'%%') as "RTO %%",
+    			count(case ct.status when "RTO-OFD" then 1 end) as "RTO-OFD",
+    			concat(round(sum(case ct.status when "RTO-OFD" then 1 else 0 end)/count(dn.courier_tracking)*100 ),'%%') as "RTO-OFD %%",
+		count(case ct.status when "Returned" then 1 end) as "Return",
+                	concat(round(sum(case ct.status when "Returned" then 1 else 0 end)/count(dn.courier_tracking)*100 ),'%%') as "Return %%",
+   sum(case ct.status when "Delivered" then 1 else 0 end)+sum(case ct.status when "Dispatch Pending" then 1 else 0 end)+sum(case ct.status when "In-Transit" then 1 else 0 end)+sum(case ct.status when "NDR" then 1 else 0 end)+sum(case ct.status when "ODA" then 1 else 0 end)+sum(case ct.status when "OFD" then 1 else 0 end)+sum(case ct.status when "RAD" then 1 else 0 end)+sum(case ct.status when "Lost" then 1 else 0 end)+sum(case ct.status when "Delay in Delivery" then 1 else 0 end)+sum(case ct.status when "RTO In-Transit" then 1 else 0 end)+sum(case ct.status when "RTO" then 1 else 0 end)+sum(case ct.status when "RTO-OFD" then 1 else 0 end)+sum(case ct.status when "Returned" then 1 else 0 end) as "Grand Total"
+		from (select name,delivery_date,courier_tracking,cc_name,courier  from `tabDelivery Note`) as dn
+	left join (select status,name,courier from `tabCourier Tracking`) as ct on dn.courier_tracking=ct.name
+    left join (select name,manager from `tabCall Center`) as cc on dn.cc_name=cc.name
+	where   ct.courier = dn.courier and date(dn.delivery_date) between %(from)s and %(to)s and (select case when %(call_center)s='__ALL__' then 1=1 else cc.name=%(call_center)s end)  and (select case when %(ccm)s='__ALL__' then 1=1 else cc.manager=%(ccm)s end) 
+		group by cc.name,cc.manager,month(dn.delivery_date),ct.courier,ct.name
+		order by dn.delivery_date
+			/* need to add filter date from date to to date on dn.delivery_date,Call_Center on cc.name,CCM(Group) on cc.manager */
