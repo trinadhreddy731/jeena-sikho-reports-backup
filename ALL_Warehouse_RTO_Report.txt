@@ -1,0 +1,10 @@
+select
+s.delivery_date as "rto_connection_date",
+count(case when ct.status = "Returned" then 1 end) as "rto_delivered",
+count(case when ct.status = "RTO In-Transit" then 1 end) as "rto_intransit",
+count(case when ct.status = "RTO-OFD" then 1 end) as "rto_ofd"
+ from `tabCourier Tracking` ct left join `tabSales Order` s
+on s.awb_no = ct.name 
+where ct.docstatus = 0
+group by 
+s.delivery_date
