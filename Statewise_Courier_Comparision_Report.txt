@@ -1,0 +1,36 @@
+select
+case when (x.del_state) then 'All States' else x.del_state end as "Delivery State",
+case when (x.del_dist) then 'All Districts' else x.del_dist end as "District::100",
+(ct.courier) as "Courier",
+count(case ct.status when "Delivered" then 1 end) as "Delivered",
+count(case ct.status when "RAD" then 1 end) as "RAD",
+count(case ct.status when "OFD" then 1 end) as "OFD",
+count(case ct.status when "In-Transit" then 1 end) as "In-Transit",
+count(case ct.status when "NDR" then 1 end) as "NDR",
+count(case ct.status when "ODA" then 1 end) as "ODA", 
+count(case ct.status when "RTO" then 1 end) as "RTO",
+count(case ct.status when "RTO-OFD" then 1 end) as "RTO-OFD",
+count(case ct.status when "RTO In-Transit" then 1 end) as "RTO In-Transit", 
+count(case ct.status when "Urgent Delivery" then 1 end) as "Urgent Delivery",
+count(case ct.status when "Lost" then 1 end) as "Lost",
+count(case ct.status when "Delay in Delivery" then 1 end) as "Delay in Delivery",
+count(case ct.status when "Dispatch Pending" then 1 end) as "Dispatch Pending",
+count(x.nm) as "Total Order",
+round((count(case when ct.status='Delivered' then 1 end)/count(x.nm))*100,2) as "Delivery Percentage"
+
+from
+(select tracking_id,status,courier ,name from `tabCourier Tracking`) ct
+left join (Select so.name as "name",so.creation as "creation" ,so.delivery_state as "del_state", so.delivery_district as "del_dist", so.courier as "cour", so.name as "nm",so.awb_no as "awbno" From `tabSales Order`so
+where so.service_provider="Courier")x  on ct.tracking_id=x.awbno
+where  (select case  when  %(courier)s ='__ALL__'  then 1=1 else x.cour=%(courier)s   end) and (select case when %(state)s='__ALL__' then 1=1 else x.del_state= %(state)s end )  
+group by 
+x.del_state,x.del_dist,ct.courier
+
+/* its not showing state and district columns because Courier Tracking is not link with Sales Order*/
+
+
+
+
+
+
+
