@@ -1,0 +1,18 @@
+select  sle.warehouse as "Warehouses::150",
+        batch_no as "Batch Number",
+        date(max(sle.modified)) as "Modified Date::100",
+        I.item_code as "Product Code::100",
+        I.item_name as "Product Name::400",
+        qty_after_transaction as "Quantity",
+        concat("₹","  ",round(stock_value,2) )as "Amount::150" 
+from (select warehouse,modified,item_code,batch_no,qty_after_transaction,stock_value  from `tabStock Ledger Entry`) sle
+
+left join (select item_code,item_name,name from `tabItem`) as I
+on sle.Item_code=I.name
+where date(sle.modified) between %(from_date)s and %(to_date)s and sle.warehouse=%(warehouse)s
+group by I.name
+order by date(max(sle.modified))
+
+/* need to add date filter on  sle.modified*/
+/* Amount and Batch number columns are not showing here correct data due to wrong data present on database but Query is correct */
+/*Need to add ware house filter*/ 
