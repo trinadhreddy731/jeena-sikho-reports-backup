@@ -1,0 +1,31 @@
+select
+so.lead as "Enquiry No.::100",
+so.name as "Order No.::120",
+so.customer_name as "Name::300",
+so.delivery_state as "State::130",
+a.city as "District::300",
+DATE(l.creation) as "Enquiry Date",
+so.delivery_date as "Delivery Date",
+so.status as "Order Status::150",
+so.order_type as "Scheme Name",
+so.total as "Amount:Currency",
+dc.no_of_years as "Problem",
+so.delivery_by  as "Courier::300",
+so.av_remarks as "AV Remark",
+so.doctor_remark as "Doctor Remark",
+so.call_center as "Call Center Name",
+so.s_o_agent_id as "Assigned Lead Agent::200"
+
+from (select name,customer_name,delivery_state,delivery_date,status,order_type,total,delivery_by,av_remarks,doctor_remark,call_center,s_o_agent_id,lead,customer_address,transaction_date  from `tabSales Order`) so
+left join (select creation,name  from `tabLead`) l
+on so.lead = l.name 
+left join (select no_of_years,parent from `tabDisease Child`) dc
+on dc.parent = l.name
+left join (select city,name  from `tabAddress`) a
+on so.customer_address = a.name
+where so.transaction_date between %(from)s and %(to)s
+/* and so.transaction_date between from and to need to add date filter*/
+/* on shuddi column table name -`tabDisease Child`  and on uat  column table name `tabDiseases Child` */
+/* on shuddi column column name - no_of_years and on uat  column table name suffering_from_how_many_years */
+/* on UAT there is no agent remark column */
+
