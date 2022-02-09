@@ -5,10 +5,10 @@ monthname(Date(so.transaction_date)) as 'Month',
 concat(year(Date(so.transaction_date)),"") as 'Year',
 Count(CASE WHEN so.lead_type = "Existing Customer Order" then 1 END) AS 'Repeat-Orders',
 COUNT(CASE WHEN so.lead_type = "Existing Customer Order" AND so.status = "Delivered" then 1 END) AS 'Repeat-Orders(Delivered)',
-concat(ROUND(COUNT(CASE WHEN so.lead_type = "Existing Customer Order" AND so.status = "Delivered" then 1 END)/COUNT(CASE WHEN so.lead_type = "Existing Customer Order" then 1 END)*100,2),"%%") AS "Repeat-Orders(Delivered)%%::200",
+COUNT(CASE WHEN so.lead_type = "Existing Customer Order" AND so.status = "Delivered" then 1 END)/COUNT(CASE WHEN so.lead_type = "Existing Customer Order" then 1 END) *100  AS "Repeat-Orders(Delivered) %%:Percent",
 COUNT(CASE WHEN so.lead_type = "Fresh Order" then 1 END) AS 'New-Orders',
 COUNT(CASE WHEN so.lead_type = "Fresh Order" AND so.status = "Delivered" then 1 END) AS 'New-Orders(Delivered)',
-concat(ROUND(COUNT(CASE WHEN so.lead_type = "Fresh Order" AND so.status = "Delivered" then 1 END)/COUNT(CASE WHEN so.lead_type = "Fresh Order" then 1 END)*100,2),"%%") AS "New-Orders(Delivered)%%"
+COUNT(CASE WHEN so.lead_type = "Fresh Order" AND so.status = "Delivered" then 1 END)/COUNT(CASE WHEN so.lead_type = "Fresh Order" then 1 END)*100 AS "New-Orders(Delivered) %%:Percent"
 from (select ccm_code,ccm_name,transaction_date,status,lead_type from `tabSales Order`) so
 where   date(so.transaction_date) between %(from)s and %(to)s
         and (select case when %(ccm)s='__ALL__' then 1=1 else  so.ccm_code=%(ccm)s   end)
