@@ -1,0 +1,35 @@
+select 
+ce.name as "Enquiry No:Link/Clinical Enquiry",
+so.name as "Order No:Link/Sales Order:150",
+so.customer_name as "Name::100",
+l.name as "Lead No::150",
+DATE(l.creation) as "Lead Date",
+so.call_sub_status as "Clinic Disposition",
+ce.contact_date as "Call Back Date",
+ce.appointment_date as "Visit Date",
+ce.doctor_name as "Doctor::150",
+ce.last_updated as "Update date (Outbound)",
+ce.clinic_name as "Clinic Name::200",
+ce.last_updated as "Lead Update Date",
+so.av_agent_name as "Agent (Outbound)",
+a.state as "State::150",
+a.city as "District",
+a.tehsil as "Tehsil::150",
+a.pincode as "Pincode",
+a.area as "Area::150",
+so.delivery_date as "Order Date",
+so.total as "Order Price:Currency",
+so.status as "Order Status::150",
+case when so.order_type ="Retail Sales" then "Retail Sales"
+    when so.order_type ="Sales" then "COD" end as "Retail Sales/COD"
+
+from (select name,lead,contact_date,appointment_date,doctor_name,last_updated,clinic_name,valid_till from `tabClinical Enquiry`) ce
+left join (select creation,name from `tabLead`) l on l.name = ce.lead
+left join (select name,lead,order_type,total,status,delivery_date,call_sub_status,av_agent_name,customer_name from `tabSales Order`) so on l.name = so.lead
+left join (select parent,link_name  from  `tabDynamic Link`) dl on l.name = dl.link_name
+left join (select state,city,tehsil,pincode,area,name from `tabAddress`) a on dl.parent = a.name
+
+group by ce.name
+/* where l.creation between (from) and (to)  */
+/* need to add date filter */
+/* add these columns ccm (inbound),ccm (outbond),agent inbound,agent name,retail order no,updated count */
