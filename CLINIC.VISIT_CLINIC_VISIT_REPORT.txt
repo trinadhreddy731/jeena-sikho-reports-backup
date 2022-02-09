@@ -1,0 +1,27 @@
+select 
+s.name as "ORDER NO",
+c.name as "ENQUIRY NO::100",
+l.name as "LEAD NO",
+l.ends_on as "Last Follow Up Date",
+s.transaction_date as "Order Date",
+c.customer_name as "CUSTOMER NAME",
+s.order_type as "SCHEME NAME",
+i.qty as "QUANTITY",
+i.amount AS "PRICE",
+s.status as "STATUS",
+s.dispatch_date as "STATUS DATE",
+s.call_sub_status as "Disposition Name",
+c.clinic_name as "Clinic Name",
+s.modified_by as "AGENT NAME(OUTBOUND)",
+l.tl_name as "TL NAME",
+l.ccm_name as "CCM NAME",
+s.av_agent_name as "AV Name",
+c.doctor_name as "DOCTOR NAME",
+count(case when order_type = "Retail Sales" then 1 end) as "NO OF RETAIL SALE"
+from (select name,doctor_name,clinic_name,customer_name,lead from  `tabClinical Enquiry`) c
+left join (select name,tl_name,ccm_name,ends_on from `tabLead`) l on c.lead = l.name
+left join (select name,transaction_date,order_type,status,dispatch_date,call_sub_status,modified_by,av_agent_name,lead from  `tabSales Order`) s on s.lead = l.name
+left join (select qty,amount,parent from `tabSales Order Item`) i on i.parent = s.name
+where s.name = i.parent  and s.transaction_date between %(from_date)s and %(to_date)s
+group by c.name
+/* add these columns agent name (inbound),agent remark,outbound commission,inbound commission,new outbound commission,new outnound percentage */
