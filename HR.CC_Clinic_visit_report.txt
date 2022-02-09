@@ -1,0 +1,26 @@
+select
+so.name as "Order No::150",
+ce.name as "Enquiry No::100",
+so.lead as "Lead No::150",
+l.ends_on as "Last Follow Up Date",
+so.transaction_date as "Order Date",
+so.customer_name as "Customer Name::120",
+so.order_type as "Scheme Name",
+so.total_qty as "Quantity",
+so.total as "Price:Currency",
+so.status as "Status::150",
+so.expected_delivery_date as "Status Date",
+so.call_sub_status as "Disposition Name",
+ce.clinic_name as "Clinic Name::200",
+so.modified_by as "Agent Name::200",
+so.call_center as "CCM::150",
+l.tl_name as "TL NAME (OUTBOUND AGENT)",
+l.ccm_name as "CCM Name",
+so.av_agent_name as "AV Name",
+/*so.agent_remarks as "Agent Remark",*/
+ce.doctor_name as "Doctor Name"
+from (select name,lead,transaction_date,order_type,total_qty,total,status,expected_delivery_date,call_sub_status,modified_by,call_center,av_agent_name,agent_remarks,customer_name from `tabSales Order`) so
+left join (select ends_on,tl_name,ccm_name,name from  `tabLead`) l on so.lead = l.name
+left join (select name,clinic_name,doctor_name,lead from  `tabClinical Enquiry`) ce on so.lead= ce.lead
+where so.transaction_date between %(from)s and %(to)s
+/* need to add columns of agent name(outbound),agent name(inbound),name(outbound agent),ccm name(inbound),agent remark,no of retail sale */
