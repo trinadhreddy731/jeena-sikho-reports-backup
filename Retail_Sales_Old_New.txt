@@ -2,25 +2,25 @@ select
 so.company as "Clinic",
 monthname(so.transaction_date) as "20 Days Of",
 year(so.transaction_date) as "Year",
-count(case when so.order_type = "Retail Sales" and so.lead_type="Fresh Order" then 0 end) as "Retail New Order Count",
-SUM(case when so.order_type = "Retail Sales" and so.lead_type="Fresh Order" then rounded_total else 0 end)  as "Retail New Sales:Currency",
+sum(if(so.order_type = "Retail Sales" && so.lead_type="Fresh Order",1,0)) as "Retail New Order Count",
+SUM(if(so.order_type = "Retail Sales" && so.lead_type="Fresh Order",rounded_total,0))  as "Retail New Sales:Currency",
 
-count(case when so.order_type = "Retail Sales" and so.lead_type="Existing Customer Order" then 0 end) as "Retail Old Order Count",
-SUM(case when so.order_type = "Retail Sales" and so.lead_type="Existing Customer Order" then rounded_total else 0 end) as "Retail Old Sales:Currency",
+sum(if(so.order_type = "Retail Sales" && so.lead_type="Existing Customer Order", 1,0)) as "Retail Old Order Count",
+SUM(if(so.order_type = "Retail Sales" && so.lead_type="Existing Customer Order", rounded_total,0)) as "Retail Old Sales:Currency",
 
-count(case when so.order_type = "Sales" and so.lead_type="Fresh Order" then 0 end) as "COD New Order Count",
-SUM(case when so.order_type = "Sales" and so.lead_type="Fresh Order" then rounded_total else 0 end) as "COD New Sales:Currency",
+sum(if(so.order_type = "Sales" && so.lead_type="Fresh Order",1,0)) as "COD New Order Count",
+SUM(if(so.order_type = "Sales" && so.lead_type="Fresh Order" , rounded_total,0)) as "COD New Sales:Currency",
 
-count(case when so.order_type = "Sales" and so.lead_type="Existing Customer Order" then 0 end)  as "COD Old Order Count",
-SUM(case when so.order_type = "Sales" and so.lead_type="Existing Customer Order" then rounded_total else 0 end) as "COD Old Sales:Currency",
+sum(if(so.order_type = "Sales" && so.lead_type="Existing Customer Order", 1,0))  as "COD Old Order Count",
+SUM(if( so.order_type = "Sales" &&  so.lead_type="Existing Customer Order", rounded_total, 0)) as "COD Old Sales:Currency",
 
-count(case when so.order_type = "Retail Sales" and so.lead_type="Fresh Order" then 0 end) + count(case when so.order_type = "Retail Sales" and so.lead_type="Existing Customer Order" then 0 end) +count(case when so.order_type = "Sales" and so.lead_type="Fresh Order" then 0 end) + count(case when so.order_type = "Sales" and so.lead_type="Existing Customer Order" then 0 end) as "Total Count" ,
+sum(if(so.order_type = "Retail Sales" && so.lead_type="Fresh Order",1,0)) + sum(if(so.order_type = "Retail Sales" && so.lead_type="Existing Customer Order", 1,0)) + sum(if(so.order_type = "Sales" && so.lead_type="Fresh Order",1,0)) + sum(if(so.order_type = "Sales" && so.lead_type="Existing Customer Order", 1,0))  as "Total Count" ,
 
-SUM(case when so.order_type = "Retail Sales" and so.lead_type="Fresh Order" then rounded_total else 0 end) +SUM(case when so.order_type = "Retail Sales" and so.lead_type="Existing Customer Order" then rounded_total else 0 end) + SUM(case when so.order_type = "Sales" and so.lead_type="Fresh Order" then rounded_total else 0 end) + SUM(case when so.order_type = "Sales" and so.lead_type="Existing Customer Order" then rounded_total else 0 end) as "Total sales Amount:Currency"
+SUM(if(so.order_type = "Retail Sales" && so.lead_type="Fresh Order",rounded_total,0)) + SUM(if(so.order_type = "Retail Sales" && so.lead_type="Existing Customer Order", rounded_total,0)) + SUM(if(so.order_type = "Sales" && so.lead_type="Fresh Order" , rounded_total,0)) + SUM(if( so.order_type = "Sales" &&  so.lead_type="Existing Customer Order", rounded_total, 0)) as "Total sales Amount:Currency"
 
 from (select company,transaction_date,order_type,lead_type,rounded_total from `tabSales Order`) so
 where  date(so.transaction_date) between %(from_date)s and %(to_date)s
-and day(so.transaction_date) between 1 and 20 and (select case when %(clinic)s ="__ALL__" then 1=1 else so.company=%(clinic)s end)
- 
+and (day(so.transaction_date) between 03 and 30) and (select case when %(clinic)s ="__ALL__" then 1=1 else so.company=%(clinic)s end)
+
 group by so.company, year(so.transaction_date),month(so.transaction_date)
 order by  year(so.transaction_date) desc,month(so.transaction_date) desc,so.company
