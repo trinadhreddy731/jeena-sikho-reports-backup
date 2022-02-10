@@ -1,0 +1,16 @@
+select 
+date(so.creation) as "Date",
+so.company as Company,
+so.courier as "Courier",
+a.city as "District",
+count(so.name) as "Delivery Order",
+count(case when ct.status="Delivered" then ct.status end) as "Delivered",
+count(so.name) + count(case when ct.status="Delivered" then ct.status end) as "Grand Total"
+from (select courier,company,creation,name,awb_no,delivery_pincode from `tabSales Order`) so left join (select courier,status,name from `tabCourier Tracking`) ct
+on ct.name = so.awb_no 
+left join (select city,pincode1 from `tabAddress`) a
+on so.delivery_pincode = a.pincode1
+where date(so.creation) between %(from)s and %(to)s and so.company=%(company)s and a.city=%(city)s
+group by 
+date(so.creation),a.city
+/* need to add filter from date - To date like 01-01-2021 to 30-12-2021 and on a.city */
