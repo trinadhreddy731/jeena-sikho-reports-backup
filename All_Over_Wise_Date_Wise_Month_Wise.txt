@@ -1,0 +1,12 @@
+select 
+date(so.creation) as "Date",
+count(so.name) as "Delivery Order",
+count(case when ct.status="Delivered" then ct.status end) as "Delivered",
+count(so.name) + count(case when ct.status="Delivered" then ct.status end) as "Grand Total"
+from (select creation,name,awb_no from `tabSales Order`) so left join (select status,name from `tabCourier Tracking`) ct
+on ct.name = so.awb_no
+where date(so.creation) between %(from)s and %(to)s
+group by 
+date(so.creation)
+/* add date filter on call log creation field*/
+/* need to add filter from date - To date like 01-01-2021 to 30-12-2021 */
